@@ -1216,22 +1216,22 @@ async def startup_event():
     worker_config = litellm.get_secret("WORKER_CONFIG")
     verbose_proxy_logger.debug(f"worker_config: {worker_config}")
     # check if it's a valid file path
-    # if os.path.isfile(worker_config):
-    #     if proxy_config.is_yaml(config_file_path=worker_config):
-    #         (
-    #             llm_router,
-    #             llm_model_list,
-    #             general_settings,
-    #         ) = await proxy_config.load_config(
-    #             router=llm_router, config_file_path=worker_config
-    #         )
-    #     else:
-    #         await initialize(**worker_config)
-    # else:
-    #     # if not, assume it's a json string
-    #     worker_config = json.loads(os.getenv("WORKER_CONFIG"))
-    #     await initialize(**worker_config)
-    # proxy_logging_obj._init_litellm_callbacks()  # INITIALIZE LITELLM CALLBACKS ON SERVER STARTUP <- do this to catch any logging errors on startup, not when calls are being made
+    if os.path.isfile(worker_config):
+        if proxy_config.is_yaml(config_file_path=worker_config):
+            (
+                llm_router,
+                llm_model_list,
+                general_settings,
+            ) = await proxy_config.load_config(
+                router=llm_router, config_file_path=worker_config
+            )
+        else:
+            await initialize(**worker_config)
+    else:
+        # if not, assume it's a json string
+        worker_config = json.loads(os.getenv("WORKER_CONFIG"))
+        await initialize(**worker_config)
+    proxy_logging_obj._init_litellm_callbacks()  # INITIALIZE LITELLM CALLBACKS ON SERVER STARTUP <- do this to catch any logging errors on startup, not when calls are being made
 
     if use_background_health_checks:
         asyncio.create_task(
