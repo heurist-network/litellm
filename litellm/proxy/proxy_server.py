@@ -7,6 +7,8 @@ import secrets, subprocess
 import hashlib, uuid
 import warnings
 import importlib
+from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 messages: list = []
 sys.path.insert(
@@ -2582,12 +2584,30 @@ async def health_readiness():
     raise HTTPException(status_code=503, detail="Service Unhealthy")
 
 
+
+""" Prometheus Metric starts from here"""
+
+SERVER_UP = Gauge('server_up', 'Whether the server is up (1) or down (0)')
+PING_LATENCY = Gauge('ping_latency_seconds', 'Ping latency in seconds')
+
 @router.get("/health/liveliness", tags=["health"])
 async def health_liveliness():
-    """
-    Unprotected endpoint for checking if worker is alive
-    """
-    return "I'm alive!"
+    try:
+        start_time = time.time()
+        await asyncio.sleep(0.01)
+        end_time = time.time()
+        ping_latency = round(end_time - start_time, 3)
+        SERVER_UP.set(1)
+        PING_LATENCY.set(ping_latency)
+        return {"status_code": 200, "message": "Service healthy", "ping_latency": ping_latency}
+    except Exception:
+        SERVER_UP.set(0)
+        raise HTTPException(status_code=503, detail="Service Unhealthy")
+
+@router.get("/metrics", tags=["Prometheus Metric"])
+async def metrics():
+    await health_liveliness()
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @router.get("/")
