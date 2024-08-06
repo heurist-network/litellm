@@ -7,6 +7,8 @@ import secrets, subprocess
 import hashlib, uuid
 import warnings
 import importlib
+from prometheus_client import Counter, Histogram, Gauge
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 messages: list = []
 sys.path.insert(
@@ -1214,22 +1216,22 @@ async def startup_event():
     worker_config = litellm.get_secret("WORKER_CONFIG")
     verbose_proxy_logger.debug(f"worker_config: {worker_config}")
     # check if it's a valid file path
-    if os.path.isfile(worker_config):
-        if proxy_config.is_yaml(config_file_path=worker_config):
-            (
-                llm_router,
-                llm_model_list,
-                general_settings,
-            ) = await proxy_config.load_config(
-                router=llm_router, config_file_path=worker_config
-            )
-        else:
-            await initialize(**worker_config)
-    else:
-        # if not, assume it's a json string
-        worker_config = json.loads(os.getenv("WORKER_CONFIG"))
-        await initialize(**worker_config)
-    proxy_logging_obj._init_litellm_callbacks()  # INITIALIZE LITELLM CALLBACKS ON SERVER STARTUP <- do this to catch any logging errors on startup, not when calls are being made
+    # if os.path.isfile(worker_config):
+    #     if proxy_config.is_yaml(config_file_path=worker_config):
+    #         (
+    #             llm_router,
+    #             llm_model_list,
+    #             general_settings,
+    #         ) = await proxy_config.load_config(
+    #             router=llm_router, config_file_path=worker_config
+    #         )
+    #     else:
+    #         await initialize(**worker_config)
+    # else:
+    #     # if not, assume it's a json string
+    #     worker_config = json.loads(os.getenv("WORKER_CONFIG"))
+    #     await initialize(**worker_config)
+    # proxy_logging_obj._init_litellm_callbacks()  # INITIALIZE LITELLM CALLBACKS ON SERVER STARTUP <- do this to catch any logging errors on startup, not when calls are being made
 
     if use_background_health_checks:
         asyncio.create_task(
@@ -2582,12 +2584,30 @@ async def health_readiness():
     raise HTTPException(status_code=503, detail="Service Unhealthy")
 
 
+
+""" Prometheus Metric starts from here"""
+
+SERVER_UP = Gauge('server_up', 'Whether the server is up (1) or down (0)')
+PING_LATENCY = Gauge('ping_latency_seconds', 'Ping latency in seconds')
+
 @router.get("/health/liveliness", tags=["health"])
 async def health_liveliness():
-    """
-    Unprotected endpoint for checking if worker is alive
-    """
-    return "I'm alive!"
+    try:
+        start_time = time.time()
+        await asyncio.sleep(0.01)
+        end_time = time.time()
+        ping_latency = round(end_time - start_time, 3)
+        SERVER_UP.set(1)
+        PING_LATENCY.set(ping_latency)
+        return {"status_code": 200, "message": "Service healthy", "ping_latency": ping_latency}
+    except Exception:
+        SERVER_UP.set(0)
+        raise HTTPException(status_code=503, detail="Service Unhealthy")
+
+@router.get("/metrics", tags=["Prometheus Metric"])
+async def metrics():
+    await health_liveliness()
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @router.get("/")
