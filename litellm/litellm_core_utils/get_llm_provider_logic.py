@@ -393,7 +393,10 @@ def get_llm_provider(
 
         # check if model in known model provider list  -> for huggingface models, raise exception as they don't have a fixed provider (can be togetherai, anyscale, baseten, runpod, et.)
         ## openai - chatcompletion + text completion
-        if (
+
+        if model in litellm.heurist_models:
+            custom_llm_provider = "heurist"
+        elif (
             model in litellm.open_ai_chat_completion_models
             or "ft:gpt-3.5-turbo" in model
             or "ft:gpt-4" in model  # catches ft:gpt-4-0613, ft:gpt-4o

@@ -139,7 +139,7 @@ def llama_2_chat_pt(messages):
             },
         },
         messages=messages,
-        bos_token="<s>",
+        # bos_token="<s>",
         eos_token="</s>",
     )
     return prompt
@@ -322,6 +322,7 @@ def falcon_chat_pt(messages):
     return prompt
 
 
+# ChatML is used by openhermes
 # MPT prompt template - from https://github.com/lm-sys/FastChat/blob/main/fastchat/conversation.py#L110
 def mpt_chat_pt(messages):
     prompt = ""
@@ -2770,7 +2771,11 @@ def prompt_factory(
                 final_prompt_value="<|start_header_id|>assistant<|end_header_id|>\n",
             )
     try:
-        if "meta-llama/llama-2" in model and "chat" in model:
+        if "openhermes" in model or "dolphin" in model: # openhermes should take higher precedence than mistral or mixtral
+            return mpt_chat_pt(messages=messages)
+        elif ("mistral" in model or "mixtral" in model) and "instruct" in model:
+            return mistral_instruct_pt(messages=messages)
+        elif "llama" in model and ("chat" in model or "instruct" in model):
             return llama_2_chat_pt(messages=messages)
         elif (
             "meta-llama/llama-3" in model or "meta-llama-3" in model
