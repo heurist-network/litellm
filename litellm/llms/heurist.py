@@ -47,9 +47,9 @@ def submit_job(api_base, job_id, model_input, model_id, api_key, temperature, ma
     }
     
     if tools:
-        job["model_input"]["LLM"]["tools"] = tools
+        job["model_input"]["LLM"]["tools"] = json.dumps(tools)
     if extra_body:
-        job["model_input"]["LLM"]["extra_body"] = extra_body
+        job["model_input"]["LLM"]["extra_body"] = json.dumps(extra_body)
     
     headers = {
         "Authorization" : f"Bearer {api_key}"
