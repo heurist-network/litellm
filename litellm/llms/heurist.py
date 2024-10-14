@@ -9,6 +9,7 @@ import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
 from .prompt_templates.factory import prompt_factory, custom_prompt
+from openai.types.chat import ChatCompletionMessage
 
 APP_ID = "heurist-llm-gateway"
 end_of_stream = "[DONE]"
@@ -114,12 +115,42 @@ def completion(
 
         print_verbose(f"raw model_response: {result}")
 
-        if len(result) == 0:  # edge case, where result is empty
-            result = " "
+        try:
+            choices = json.loads(result)
+            if isinstance(choices, list):
+                # Replace the existing choices with the new ones
+                model_response.choices = []
+                for idx, choice in enumerate(choices):
+                    message = ChatCompletionMessage(
+                        role=choice.get('message', {}).get('role', 'assistant'),
+                        content=choice.get('message', {}).get('content', '')
+                    )
+                    model_response.choices.append(Choices(
+                        index=idx,
+                        message=message,
+                        finish_reason=choice.get('finish_reason')
+                    ))
 
-        ## Building RESPONSE OBJECT
-        if len(result) > 1:
-            model_response.choices[0].message.content = result
+            model_response.model = "heurist/" + model
+            
+            # If usage information is available in the response, update it
+            if choices and isinstance(choices[0], dict) and 'usage' in choices[0]:
+                usage_data = choices[0]['usage']
+                model_response.usage = Usage(
+                    prompt_tokens=usage_data.get('prompt_tokens', 0),
+                    completion_tokens=usage_data.get('completion_tokens', 0),
+                    total_tokens=usage_data.get('total_tokens', 0)
+                )
+            else:
+                # If no usage information, keep the default values
+                model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+
+        except json.JSONDecodeError:
+            print_verbose(f"Failed to parse JSON response: {result}")
+            # Fallback to the original behavior if JSON parsing fails
+            if len(result) > 1:
+                model_response.choices[0].message.content = result
+            model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
 
         model_response.model = "heurist/" + model
         usage = Usage(
