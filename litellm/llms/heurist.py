@@ -4,7 +4,7 @@ import random
 import requests
 import time
 from typing import Callable, Optional
-from litellm.utils import ModelResponse, Usage
+from litellm.utils import ModelResponse, Usage,Choices
 import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
