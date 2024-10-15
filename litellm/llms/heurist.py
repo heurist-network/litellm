@@ -4,7 +4,7 @@ import random
 import requests
 import time
 from typing import Callable, Optional
-from litellm.utils import ModelResponse, Usage,Choices
+from litellm.utils import ModelResponse, Usage,Choices, Message
 import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
@@ -121,15 +121,14 @@ def completion(
                 # Replace the existing choices with the new ones
                 model_response.choices = []
                 for idx, choice in enumerate(choices):
-                    message = ChatCompletionMessage(
-                        role=choice.get('message', {}).get('role', 'assistant'),
-                        content=choice.get('message', {}).get('content', '')
-                    )
-                    model_response.choices.append(Choices(
+                    message_content = choice.get('message', {}).get('content', '')
+                    message = Message(content=message_content)
+                    choice_obj = Choices(
                         index=idx,
                         message=message,
                         finish_reason=choice.get('finish_reason')
-                    ))
+                    )
+                    model_response.choices.append(choice_obj)
 
             model_response.model = "heurist/" + model
             
@@ -144,6 +143,8 @@ def completion(
             else:
                 # If no usage information, keep the default values
                 model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+            
+            return model_response
 
         except json.JSONDecodeError:
             print_verbose(f"Failed to parse JSON response: {result}")
@@ -152,11 +153,5 @@ def completion(
                 model_response.choices[0].message.content = result
             model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
 
-        model_response.model = "heurist/" + model
-        usage = Usage(
-            prompt_tokens=0,
-            completion_tokens=0,
-            total_tokens=0,
-        )
-        model_response.usage = usage
-        return model_response
+    model_response.model = "heurist/" + model
+    return model_response
