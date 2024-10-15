@@ -3,13 +3,14 @@ import json
 import random
 import requests
 import time
-from typing import Callable, Optional
-from litellm.utils import ModelResponse, Usage,Choices, Message
+from typing import Callable, Optional, Literal, List
+from litellm.types.utils import Function,ChatCompletionMessageToolCall, ModelResponse,Usage,Choices,Message
 import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
 from .prompt_templates.factory import prompt_factory, custom_prompt
 from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageToolCall
+from pydantic import BaseModel
 
 APP_ID = "heurist-llm-gateway"
 end_of_stream = "[DONE]"
@@ -97,6 +98,8 @@ def completion(
     ## COMPLETION CALL
     model_response.created = int(time.time())
 
+    print(f"optional_params: {optional_params}")
+
     temperature = optional_params.get("temperature", 0.75)
     
     if ("mistral" in model or "mixtral" in model) and temperature < 0.01:
@@ -105,7 +108,20 @@ def completion(
     max_tokens = optional_params.get("max_tokens", 500)
 
     tools = optional_params.get("tools", None)
-    extra_body = optional_params.get("extra_body", None)
+    
+    # Extract guided parameters and other extra body fields
+    extra_body = {}
+    guided_params = ["guided_json", "guided_regex", "guided_choice", "guided_grammar"]
+    other_params = ["echo", "add_generation_prompt", "include_stop_str_in_output", "guided_decoding_backend", "guided_whitespace_pattern"]
+    
+    for param in guided_params + other_params:
+        if param in optional_params:
+            extra_body[param] = optional_params[param]
+    
+    # If extra_body is empty, set it to None
+    extra_body = extra_body if extra_body else None
+    
+    print(f"extra_body: {extra_body}")
     
     if "stream" in optional_params and optional_params["stream"] == True:
         return handle_stream(submit_job(api_base, get_random_job_id(), prompt, model, user_api_key, temperature, max_tokens, tools, extra_body, use_stream=True))
@@ -114,6 +130,7 @@ def completion(
         model_response.ended = int(time.time())
 
         print_verbose(f"raw model_response: {result}")
+        print(f"result: {result}")
 
         try:
             choices = json.loads(result)
@@ -121,20 +138,29 @@ def completion(
                 # Replace the existing choices with the new ones
                 model_response.choices = []
                 for idx, choice in enumerate(choices):
-                    message_content = choice.get('message', {}).get('content')
-                    tool_calls = choice.get('message', {}).get('tool_calls')
+                    message_data = choice.get('message', {})
+                    message_content = message_data.get('content')
+                    tool_calls_data = message_data.get('tool_calls')
                     
-                    message = Message(content=message_content)
-                    
-                    if tool_calls:
-                        message.tool_calls = [
-                            ChatCompletionMessageToolCall(
-                                id=tool_call.get('id'),
-                                type=tool_call.get('type'),
-                                function=tool_call.get('function')
-                            )
-                            for tool_call in tool_calls
+                    tool_calls = None
+                    if tool_calls_data:
+                        tool_calls = [
+                            {
+                                "id": tool_call.get('id'),
+                                "type": tool_call.get('type'),
+                                "function": {
+                                    "name": tool_call.get('function', {}).get('name'),
+                                    "arguments": tool_call.get('function', {}).get('arguments')
+                                }
+                            }
+                            for tool_call in tool_calls_data
                         ]
+
+                    message = Message(
+                        content=message_content,
+                        role=message_data.get('role', 'assistant'),
+                        tool_calls=tool_calls
+                    )
                     
                     choice_obj = Choices(
                         index=idx,
@@ -143,21 +169,22 @@ def completion(
                     )
                     model_response.choices.append(choice_obj)
 
-            model_response.model = "heurist/" + model
-            
-            # If usage information is available in the response, update it
-            if choices and isinstance(choices[0], dict) and 'usage' in choices[0]:
-                usage_data = choices[0]['usage']
-                model_response.usage = Usage(
-                    prompt_tokens=usage_data.get('prompt_tokens', 0),
-                    completion_tokens=usage_data.get('completion_tokens', 0),
-                    total_tokens=usage_data.get('total_tokens', 0)
-                )
-            else:
-                # If no usage information, keep the default values
-                model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
-            
-            return model_response
+                model_response.model = "heurist/" + model
+                
+                # If usage information is available in the response, update it
+                if choices and isinstance(choices[0], dict) and 'usage' in choices[0]:
+                    usage_data = choices[0]['usage']
+                    model_response.usage = Usage(
+                        prompt_tokens=usage_data.get('prompt_tokens', 0),
+                        completion_tokens=usage_data.get('completion_tokens', 0),
+                        total_tokens=usage_data.get('total_tokens', 0)
+                    )
+                else:
+                    # If no usage information, keep the default values
+                    model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+                
+                print(f"model_response: {model_response}")
+                return model_response
 
         except json.JSONDecodeError:
             print_verbose(f"Failed to parse JSON response: {result}")
@@ -168,3 +195,6 @@ def completion(
 
     model_response.model = "heurist/" + model
     return model_response
+
+
+
