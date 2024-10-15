@@ -4,7 +4,7 @@ import random
 import requests
 import time
 from typing import Callable, Optional
-from litellm.utils import ModelResponse, Usage,Choices, Message
+from litellm.utils import ModelResponse, Usage,Choices, Message, ChatCompletionMessageToolCall
 import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
@@ -121,8 +121,21 @@ def completion(
                 # Replace the existing choices with the new ones
                 model_response.choices = []
                 for idx, choice in enumerate(choices):
-                    message_content = choice.get('message', {}).get('content', '')
+                    message_content = choice.get('message', {}).get('content')
+                    tool_calls = choice.get('message', {}).get('tool_calls')
+                    
                     message = Message(content=message_content)
+                    
+                    if tool_calls:
+                        message.tool_calls = [
+                            ChatCompletionMessageToolCall(
+                                id=tool_call.get('id'),
+                                type=tool_call.get('type'),
+                                function=tool_call.get('function')
+                            )
+                            for tool_call in tool_calls
+                        ]
+                    
                     choice_obj = Choices(
                         index=idx,
                         message=message,
