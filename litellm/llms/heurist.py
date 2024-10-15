@@ -4,12 +4,12 @@ import random
 import requests
 import time
 from typing import Callable, Optional
-from litellm.utils import ModelResponse, Usage,Choices, Message, ChatCompletionMessageToolCall
+from litellm.utils import ModelResponse, Usage,Choices, Message
 import litellm
 import httpx
 from litellm.asyncsseclient import asyncsseclient
 from .prompt_templates.factory import prompt_factory, custom_prompt
-from openai.types.chat import ChatCompletionMessage
+from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageToolCall
 
 APP_ID = "heurist-llm-gateway"
 end_of_stream = "[DONE]"
