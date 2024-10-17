@@ -56,8 +56,6 @@ def submit_job(api_base, job_id, model_input, model_id, api_key, temperature, ma
     headers = {
         "Authorization" : f"Bearer {api_key}"
     }
-    print(f"Submitting job with headers {headers}")
-    print(f"Job: {job}")
     response = requests.post(url, json=job, headers=headers)
     if response.status_code != 200:
         raise Exception(f"Error submitting job {job_id}: {response.text}")
@@ -68,11 +66,9 @@ def submit_job(api_base, job_id, model_input, model_id, api_key, temperature, ma
         return response.text
     
 async def handle_stream(stream_url):
-    print("[handle_stream] stream_url: ", stream_url)
     client = asyncsseclient(stream_url)
     async for event in client:
         if end_of_stream in event.data:
-            print("[handle_stream] Received EOS from server. Exiting...")
             break
         if event.data:
             yield event.data
@@ -98,7 +94,6 @@ def completion(
     ## COMPLETION CALL
     model_response.created = int(time.time())
 
-    print(f"optional_params: {optional_params}")
 
     temperature = optional_params.get("temperature", 0.75)
     
@@ -121,7 +116,6 @@ def completion(
     # If extra_body is empty, set it to None
     extra_body = extra_body if extra_body else None
     
-    print(f"extra_body: {extra_body}")
     
     if "stream" in optional_params and optional_params["stream"] == True:
         return handle_stream(submit_job(api_base, get_random_job_id(), prompt, model, user_api_key, temperature, max_tokens, tools, extra_body, use_stream=True))
@@ -130,7 +124,6 @@ def completion(
         model_response.ended = int(time.time())
 
         print_verbose(f"raw model_response: {result}")
-        print(f"result: {result}")
 
         try:
             choices = json.loads(result)
@@ -183,7 +176,6 @@ def completion(
                     # If no usage information, keep the default values
                     model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
                 
-                print(f"model_response: {model_response}")
                 return model_response
 
         except json.JSONDecodeError:
@@ -195,6 +187,5 @@ def completion(
 
     model_response.model = "heurist/" + model
     return model_response
-
 
 
