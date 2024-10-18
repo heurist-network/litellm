@@ -103,6 +103,21 @@ def completion(
     max_tokens = optional_params.get("max_tokens", 500)
 
     tools = optional_params.get("tools", None)
+
+    # Fetch model configuration
+    model_config_url = "https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json"
+    response = requests.get(model_config_url)
+    model_configs = json.loads(response.text)
+
+    # Find the config for the requested model
+    model_config = next((config for config in model_configs if config["name"] == model), None)
+
+    if model_config is None:
+        raise ValueError(f"Model {model} not found in configuration")
+
+    # Check if tools are supported
+    if tools is not None and not model_config.get("support_tools", False):
+        raise ValueError(f"Model {model} does not support tools")
     
     # Extract guided parameters and other extra body fields
     extra_body = {}
