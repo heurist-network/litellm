@@ -124,13 +124,6 @@ def completion(
     tools = optional_params.get("tools", None)
 
     # Fetch model configuration
-    # if heurist_model_config is None:
-    #     model_config_url = "https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json"
-    #     response = requests.get(model_config_url)
-    #     model_configs = json.loads(response.text)
-
-    # Find the config for the requested model
-    print("heurist.py >> heurist_model_config", heurist_model_config)
     model_config = heurist_model_config
 
     if model_config is None:
@@ -139,6 +132,11 @@ def completion(
     # Check if tools are supported
     if tools is not None and not model_config.get("support_tools", False):
         raise ValueError(f"Model {model} does not support tools")
+
+    # check if have redirect field
+    redirect = model_config.get("redirect", None)
+    if redirect:
+        model = model_config["redirect"]
     
     # Extract guided parameters and other extra body fields
     extra_body = {}

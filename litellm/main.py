@@ -194,7 +194,6 @@ watsonxai = IBMWatsonXAI()
 sagemaker_llm = SagemakerLLM()
 heurist_config = heurist.HeuristConfig.get_config()
 
-print("main.py >>heurist_config", heurist_config)
 
 ####### COMPLETION ENDPOINTS ################
 
@@ -731,7 +730,6 @@ def completion(
     """
     ######### unpacking kwargs #####################
     args = locals()
-    print(">>> main.py kwargs ", kwargs)
     api_base = kwargs.get("api_base", None)
     mock_response = kwargs.get("mock_response", None)
     mock_tool_calls = kwargs.get("mock_tool_calls", None)
