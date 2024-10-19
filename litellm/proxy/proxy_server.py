@@ -1390,6 +1390,8 @@ class ProxyConfig:
                 "litellm_settings": {},
             }
 
+        print("get config", config)
+
         ## DB
         if prisma_client is not None and (
             general_settings.get("store_model_in_db", False) is True
@@ -1454,6 +1456,8 @@ class ProxyConfig:
         """
         # load existing config
         config = await self.get_config()
+        print(" >>> load_team_config", config)
+        
         ## LITELLM MODULE SETTINGS (e.g. litellm.drop_params=True,..)
         litellm_settings = config.get("litellm_settings", {})
         all_teams_config = litellm_settings.get("default_team_settings", None)
@@ -1523,6 +1527,8 @@ class ProxyConfig:
         ## PRINT YAML FOR CONFIRMING IT WORKS
         printed_yaml = copy.deepcopy(config)
         printed_yaml.pop("environment_variables", None)
+
+        print("printed_yaml", printed_yaml)
 
         verbose_proxy_logger.debug(
             f"Loaded config YAML (api_key and environment_variables are not shown):\n{json.dumps(printed_yaml, indent=2)}"

@@ -12,6 +12,24 @@ from .prompt_templates.factory import prompt_factory, custom_prompt
 from openai.types.chat import ChatCompletionMessage, ChatCompletionMessageToolCall
 from pydantic import BaseModel
 
+class HeuristConfig:
+    def __init__(self):
+        self.model_configs = self.fetch_model_configs()
+
+    def fetch_model_configs(self):
+        model_config_url = "https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json"
+        response = requests.get(model_config_url)
+        return json.loads(response.text)
+
+    def get_model_config(self, model):
+        return next((config for config in self.model_configs if config["name"] == model), None)
+
+    @classmethod
+    def get_config(cls):
+        return cls()
+
+
+
 APP_ID = "heurist-llm-gateway"
 end_of_stream = "[DONE]"
 
@@ -86,6 +104,7 @@ def completion(
     optional_params=None,
     litellm_params=None,
     logger_fn=None,
+    heurist_model_config=None
 ):
     prompt = prompt_factory(model=model, messages=messages)
 
@@ -105,12 +124,14 @@ def completion(
     tools = optional_params.get("tools", None)
 
     # Fetch model configuration
-    model_config_url = "https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json"
-    response = requests.get(model_config_url)
-    model_configs = json.loads(response.text)
+    # if heurist_model_config is None:
+    #     model_config_url = "https://raw.githubusercontent.com/heurist-network/heurist-models/main/models.json"
+    #     response = requests.get(model_config_url)
+    #     model_configs = json.loads(response.text)
 
     # Find the config for the requested model
-    model_config = next((config for config in model_configs if config["name"] == model), None)
+    print("heurist.py >> heurist_model_config", heurist_model_config)
+    model_config = heurist_model_config
 
     if model_config is None:
         raise ValueError(f"Model {model} not found in configuration")

@@ -192,6 +192,10 @@ vertex_partner_models_chat_completion = VertexAIPartnerModels()
 vertex_text_to_speech = VertexTextToSpeechAPI()
 watsonxai = IBMWatsonXAI()
 sagemaker_llm = SagemakerLLM()
+heurist_config = heurist.HeuristConfig.get_config()
+
+print("main.py >>heurist_config", heurist_config)
+
 ####### COMPLETION ENDPOINTS ################
 
 
@@ -727,6 +731,7 @@ def completion(
     """
     ######### unpacking kwargs #####################
     args = locals()
+    print(">>> main.py kwargs ", kwargs)
     api_base = kwargs.get("api_base", None)
     mock_response = kwargs.get("mock_response", None)
     mock_tool_calls = kwargs.get("mock_tool_calls", None)
@@ -1041,6 +1046,7 @@ def completion(
                 api_key=api_key,
                 logging_obj=logging,
                 custom_prompt_dict=custom_prompt_dict,
+                heurist_model_config = heurist_config.get_model_config(model)
             )
             if "stream" in optional_params and optional_params["stream"] == True:
                 # don't try to access stream object,
