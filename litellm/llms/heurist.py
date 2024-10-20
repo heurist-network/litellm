@@ -132,7 +132,8 @@ def completion(
 
     # Check if tools are supported
     if tools is not None and not model_config.get("tool_call_parser", False):
-        raise ValueError(f"Model {model} does not support tools")
+        print(f"Warning: Model {model} does not support tools: {tools}")
+        tools = None
 
     # check if have redirect field
     redirect = model_config.get("redirect", None)
