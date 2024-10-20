@@ -130,7 +130,7 @@ def completion(
         raise ValueError(f"Model {model} not found in configuration")
 
     # Check if tools are supported
-    if tools is not None and not model_config.get("support_tools", False):
+    if tools is not None and not model_config.get("tool_call_parser", False):
         raise ValueError(f"Model {model} does not support tools")
 
     # check if have redirect field
