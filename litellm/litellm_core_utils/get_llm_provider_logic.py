@@ -93,6 +93,7 @@ def get_llm_provider(
             api_base = litellm_params.api_base
             api_key = litellm_params.api_key
 
+        print("params.custom_llm_provider", litellm_params.custom_llm_provider)
         dynamic_api_key = None
         # check if llm provider provided
         # AZURE AI-Studio Logic - Azure AI Studio supports AZURE/Cohere
@@ -118,6 +119,7 @@ def get_llm_provider(
         if api_key and api_key.startswith("os.environ/"):
             dynamic_api_key = get_secret(api_key)
         # check if llm provider part of model name
+        print("provider list", litellm.provider_list)
         if (
             model.split("/", 1)[0] in litellm.provider_list
             and model.split("/", 1)[0] not in litellm.model_list
@@ -394,6 +396,7 @@ def get_llm_provider(
         # check if model in known model provider list  -> for huggingface models, raise exception as they don't have a fixed provider (can be togetherai, anyscale, baseten, runpod, et.)
         ## openai - chatcompletion + text completion
 
+        print("heurist supported models", litellm.heurist_models)
         if model in litellm.heurist_models:
             custom_llm_provider = "heurist"
         elif (
