@@ -7033,6 +7033,23 @@ class CustomStreamWrapper:
             )
             return ""
 
+    def handle_heurist_chunk(self, chunk):
+        try:
+            text = chunk
+            is_finished = False
+            finish_reason = ""
+            if "[DONE]" in chunk:
+                text = chunk.replace("[DONE]", "")
+                is_finished = True
+                finish_reason = "stop"
+            return {
+                "text": text,
+                "is_finished": is_finished,
+                "finish_reason": finish_reason,
+            }
+        except:
+            raise ValueError(f"Unable to parse response. Original response: {chunk}")
+
     def handle_cloudlfare_stream(self, chunk):
         try:
             print_verbose(f"\nRaw OpenAI Chunk\n{chunk}\n")
@@ -7386,6 +7403,11 @@ class CustomStreamWrapper:
                 completion_obj["content"] = response_obj["text"]
                 if response_obj["is_finished"]:
                     self.received_finish_reason = response_obj["finish_reason"]
+            elif self.custom_llm_provider and self.custom_llm_provider == "heurist":
+                response_obj = self.handle_heurist_chunk(chunk)
+                completion_obj["content"] = response_obj["text"]
+                if response_obj["is_finished"]:
+                    model_response.choices[0].finish_reason = response_obj["finish_reason"]
             elif self.custom_llm_provider and self.custom_llm_provider == "clarifai":
                 response_obj = self.handle_clarifai_completion_chunk(chunk)
                 completion_obj["content"] = response_obj["text"]
@@ -8267,6 +8289,7 @@ class CustomStreamWrapper:
 
             if (
                 self.custom_llm_provider == "openai"
+                or self.custom_llm_provider == "heurist"
                 or self.custom_llm_provider == "azure"
                 or self.custom_llm_provider == "custom_openai"
                 or self.custom_llm_provider == "text-completion-openai"
