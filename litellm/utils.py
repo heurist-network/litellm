@@ -7042,6 +7042,9 @@ class CustomStreamWrapper:
                 text = chunk.replace("[DONE]", "")
                 is_finished = True
                 finish_reason = "stop"
+                print("chunk - stop")
+            if "None" in chunk:
+                print("warning: None, chunk=", chunk)
             return {
                 "text": text,
                 "is_finished": is_finished,
