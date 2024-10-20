@@ -93,7 +93,6 @@ def get_llm_provider(
             api_base = litellm_params.api_base
             api_key = litellm_params.api_key
 
-        print("params.custom_llm_provider", litellm_params.custom_llm_provider)
         dynamic_api_key = None
         # check if llm provider provided
         # AZURE AI-Studio Logic - Azure AI Studio supports AZURE/Cohere
