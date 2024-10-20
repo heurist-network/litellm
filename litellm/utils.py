@@ -7407,10 +7407,14 @@ class CustomStreamWrapper:
                 if response_obj["is_finished"]:
                     self.received_finish_reason = response_obj["finish_reason"]
             elif self.custom_llm_provider and self.custom_llm_provider == "heurist":
+                print(f"Heurist chunk received: {chunk}")
                 response_obj = self.handle_heurist_chunk(chunk)
                 completion_obj["content"] = response_obj["text"]
+                print(f"Heurist completion_obj: {completion_obj}")
                 if response_obj["is_finished"]:
+                    print(f"Heurist is_finished: {response_obj['is_finished']}")
                     model_response.choices[0].finish_reason = response_obj["finish_reason"]
+                    print(f"Heurist finish_reason: {response_obj['finish_reason']}")
             elif self.custom_llm_provider and self.custom_llm_provider == "clarifai":
                 response_obj = self.handle_clarifai_completion_chunk(chunk)
                 completion_obj["content"] = response_obj["text"]
@@ -8034,6 +8038,7 @@ class CustomStreamWrapper:
                 else:
                     return
             elif self.received_finish_reason is not None:
+                print(f"Received finish reason: {self.received_finish_reason}")
                 if self.sent_last_chunk is True:
                     # Bedrock returns the guardrail trace in the last chunk - we want to return this here
                     if (
@@ -8057,15 +8062,18 @@ class CustomStreamWrapper:
                 _is_delta_empty = self.is_delta_empty(
                     delta=model_response.choices[0].delta
                 )
+                print(f"Is delta empty: {_is_delta_empty}")
 
                 if _is_delta_empty:
                     # get any function call arguments
                     model_response.choices[0].finish_reason = map_finish_reason(
                         finish_reason=self.received_finish_reason
                     )  # ensure consistent output to openai
+                    print(f"Mapped finish reason: {model_response.choices[0].finish_reason}")
 
                     self.sent_last_chunk = True
 
+                print(f"Final model_response: {model_response}")
                 return model_response
             elif (
                 model_response.choices[0].delta.tool_calls is not None
