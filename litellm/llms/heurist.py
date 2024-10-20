@@ -50,6 +50,7 @@ def get_random_job_id():
 
 def submit_job(api_base, job_id, model_input, model_id, api_key, temperature, max_tokens, tools, extra_body, use_stream=True):
     url = api_base + "/submit_job"
+    print("submitting job", api_base, job_id, model_input, model_id)
     job = {
         "job_id": job_id,
         "model_input": {
