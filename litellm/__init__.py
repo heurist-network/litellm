@@ -684,7 +684,7 @@ heurist_models = [
     "meta-llama/llama-3.1-405b-instruct", 
     "openhermes-mixtral-8x7b-gptq", 
     "dolphin-2.9-llama3-8b",
-    "dolphin-2.9.4-llama3.1-8b",
+    "dolphin-2.9.1-llama-3-8b",
     "hermes-3-llama3.1-8b",
     "theia-llama-3.1-8b"
 ]
