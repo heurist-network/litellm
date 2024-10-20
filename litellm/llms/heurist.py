@@ -22,6 +22,7 @@ class HeuristConfig:
         return json.loads(response.text)
 
     def get_model_config(self, model):
+        model = normalize_model_id(model)
         return next((config for config in self.model_configs if config["name"] == model), None)
 
     @classmethod
@@ -128,7 +129,8 @@ def completion(
     model_config = heurist_model_config
 
     if model_config is None:
-        raise ValueError(f"Model {model} not found in configuration")
+        print(f"Warning: Model {model} not found in configuration")
+        model_config = {}
 
     # Check if tools are supported
     if tools is not None and not model_config.get("tool_call_parser", False):
