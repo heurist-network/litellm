@@ -21,6 +21,16 @@ class HeuristConfig:
         response = requests.get(model_config_url)
         return json.loads(response.text)
 
+    def get_llm_models(self):
+        return [
+            {
+                "id": model["name"],
+                "object": "model",
+            }
+            for model in self.model_configs
+            if model.get("type", "").startswith("llm")
+        ]
+
     def get_model_config(self, model):
         model = normalize_model_id(model)
         return next((config for config in self.model_configs if config["name"] == model), None)

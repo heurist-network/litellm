@@ -25,6 +25,8 @@ from typing import (
 )
 
 import requests
+from litellm.llms import heurist
+heurist_config = heurist.HeuristConfig.get_config()
 
 if TYPE_CHECKING:
     from opentelemetry.trace import Span as _Span
@@ -3007,9 +3009,17 @@ async def startup_event():
 @router.get(
     "/models", dependencies=[Depends(user_api_key_auth)], tags=["model management"]
 )  # if project requires model list
-async def model_list(
-    user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
-):
+async def get_models():
+    """Get available LLM models"""
+    try:
+        models = heurist_config.get_llm_models()
+        return {"data": models, "object": "list"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching models: {str(e)}")
+
+# async def model_list(
+#     user_api_key_dict: UserAPIKeyAuth = Depends(user_api_key_auth),
+# ):
     """
     Use `/model/info` - to get detailed model information, example - pricing, mode, etc.
 
