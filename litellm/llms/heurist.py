@@ -171,7 +171,7 @@ def completion(
         result = submit_job(api_base, get_random_job_id(), prompt, model, user_api_key, temperature, max_tokens, tools, extra_body, use_stream=False)
         model_response.ended = int(time.time())
 
-        print_verbose(f"raw model_response: {result}")
+        print(f"submit_job result: {result}")
 
         try:
             choices = json.loads(result)
@@ -225,13 +225,27 @@ def completion(
                     model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
                 
                 return model_response
+            else:
+                # edge case: if the submit_job returns a string with quotes "xxxxx", it doesn't throw json.JSONDecodeError
+                # we want it to throw, too
+                raise json.JSONDecodeError("Invalid JSON", result, 0)
 
         except json.JSONDecodeError:
-            print_verbose(f"Failed to parse JSON response: {result}")
-            # Fallback to the original behavior if JSON parsing fails
-            if len(result) > 1:
-                model_response.choices[0].message.content = result
+            # If it's a plain string, create a simple response structure
+            message = Message(
+                content=result,
+                role='assistant',
+                tool_calls=None
+            )
+            choice_obj = Choices(
+                index=0,
+                message=message,
+                finish_reason="stop"
+            )
+            model_response.choices = [choice_obj]
+            model_response.model = "heurist/" + model
             model_response.usage = Usage(prompt_tokens=0, completion_tokens=0, total_tokens=0)
+            return model_response
 
     model_response.model = "heurist/" + model
     return model_response
