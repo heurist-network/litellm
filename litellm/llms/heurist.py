@@ -131,7 +131,7 @@ def completion(
     if ("mistral" in model or "mixtral" in model) and temperature < 0.01:
         temperature = 0.01
     
-    max_tokens = optional_params.get("max_tokens", 500)
+    max_tokens = optional_params.get("max_tokens", 1024)
 
     tools = optional_params.get("tools", None)
 
