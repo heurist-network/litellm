@@ -53,6 +53,8 @@ def normalize_model_id(model_id):
         return "mistralai/mixtral-8x7b-instruct"
     if model_id == "mistralai/mistral-7b-instruct-v0.2":
         return "mistralai/mistral-7b-instruct"
+    if model_id == "meta-llama/llama-3-70b-instruct":
+        return "meta-llama/llama-3.3-70b-instruct"
     return model_id
 
 def get_random_job_id():

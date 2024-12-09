@@ -681,7 +681,7 @@ heurist_models = [
     "mistralai/mistral-7b-instruct-v0.2", 
     "meta-llama/llama-2-70b-chat", 
     "meta-llama/llama-3-70b-instruct", 
-    "meta-llama/llama-3.1-405b-instruct", 
+    "meta-llama/llama-3.3-70b-instruct", 
     "openhermes-mixtral-8x7b-gptq", 
     "dolphin-2.9-llama3-8b",
     "dolphin-2.9.1-llama-3-8b",
