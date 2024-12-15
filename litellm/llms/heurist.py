@@ -48,6 +48,9 @@ end_of_stream = "[DONE]"
 default_priority = 1
 default_deadline = 60
 
+def tool_call_model_id_converter(model_id):
+    return "meta-llama/llama-3.3-70b-instruct"
+
 def normalize_model_id(model_id):
     if model_id == "mistralai/mixtral-8x7b-instruct-v0.1":
         return "mistralai/mixtral-8x7b-instruct"
@@ -145,14 +148,19 @@ def completion(
         model_config = {}
 
     # Check if tools are supported
-    if tools is not None and not model_config.get("tool_call_parser", False):
-        print(f"Warning: Model {model} does not support tools: {tools}")
-        tools = None
+    # if tools is not None and not model_config.get("tool_call_parser", False):
+    #     print(f"Warning: Model {model} does not support tools: {tools}")
+    #     tools = None
 
     # check if have redirect field
     redirect = model_config.get("redirect", None)
     if redirect:
         model = model_config["redirect"]
+    
+    if tools:
+        model = tool_call_model_id_converter(model)
+        print("tools called", tools)
+        print("model", model)
     
     # Extract guided parameters and other extra body fields
     extra_body = {}
