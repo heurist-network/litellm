@@ -213,10 +213,15 @@ def completion(
                         tool_calls=tool_calls
                     )
                     
+                    # Map 'eos' to 'stop' before creating the Choice object
+                    finish_reason = choice.get('finish_reason')
+                    if finish_reason == 'eos':
+                        finish_reason = 'stop'
+
                     choice_obj = Choices(
                         index=idx,
                         message=message,
-                        finish_reason=choice.get('finish_reason')
+                        finish_reason=finish_reason
                     )
                     model_response.choices.append(choice_obj)
 
