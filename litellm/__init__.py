@@ -474,7 +474,7 @@ openai_compatible_endpoints: List = [
     "codestral.mistral.ai/v1/fim/completions",
     "api.groq.com/openai/v1",
     "https://integrate.api.nvidia.com/v1",
-    "api.deepseek.com/v1",
+    #"api.deepseek.com/v1",
     "api.together.xyz/v1",
     "app.empower.dev/api/v1",
     "inference.friendli.ai/v1",
@@ -492,7 +492,7 @@ openai_compatible_providers: List = [
     "ai21_chat",
     "volcengine",
     "codestral",
-    "deepseek",
+    #"deepseek",
     "deepinfra",
     "perplexity",
     "xinference",
@@ -688,7 +688,9 @@ heurist_models = [
     "hermes-3-llama3.1-8b",
     "theia-llama-3.1-8b",
     "nvidia/llama-3.1-nemotron-70b-instruct",
-    "qwen/qwen-2.5-coder-32b-instruct"
+    "qwen/qwen-2.5-coder-32b-instruct",
+    "deepseek/deepseek-r1",
+    "deepseek/deepseek-chat"
 ]
 
 model_list = (
@@ -762,7 +764,7 @@ class LlmProviders(str, Enum):
     VOLCENGINE = "volcengine"
     CODESTRAL = "codestral"
     TEXT_COMPLETION_CODESTRAL = "text-completion-codestral"
-    DEEPSEEK = "deepseek"
+    #DEEPSEEK = "deepseek"
     SAMBANOVA = "sambanova"
     MARITALK = "maritalk"
     VOYAGE = "voyage"
