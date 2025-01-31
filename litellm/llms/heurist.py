@@ -59,6 +59,8 @@ def normalize_model_id(model_id):
         return "mistralai/mistral-7b-instruct"
     if model_id == "meta-llama/llama-3-70b-instruct":
         return "meta-llama/llama-3.3-70b-instruct"
+    if model_id == "mistralai/mistral-small-24b-instruct":
+        return "mistralai/mistral-small-24b-instruct-2501"
     if model_id == "hermes-3-llama3.1-8b" or model_id == "dolphin-2.9-llama3-8b" or model_id == "theia-llama-3.1-8b":
         return "NousResearch/Hermes-3-Llama-3.1-8B"
     return model_id
