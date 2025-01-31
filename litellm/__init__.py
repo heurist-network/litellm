@@ -679,6 +679,7 @@ heurist_models = [
     "mistralai/mistral-7b-instruct", 
     "mistralai/mixtral-8x7b-instruct-v0.1", 
     "mistralai/mistral-7b-instruct-v0.2", 
+    "mistralai/mistral-small-24b-instruct",
     "meta-llama/llama-2-70b-chat", 
     "meta-llama/llama-3-70b-instruct", 
     "meta-llama/llama-3.3-70b-instruct", 
