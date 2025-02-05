@@ -683,6 +683,7 @@ heurist_models = [
     "meta-llama/llama-2-70b-chat", 
     "meta-llama/llama-3-70b-instruct", 
     "meta-llama/llama-3.3-70b-instruct", 
+    "NousResearch/Hermes-3-Llama-3.1-8B",
     "openhermes-mixtral-8x7b-gptq", 
     "dolphin-2.9-llama3-8b",
     "dolphin-2.9.1-llama-3-8b",
@@ -691,7 +692,10 @@ heurist_models = [
     "nvidia/llama-3.1-nemotron-70b-instruct",
     "qwen/qwen-2.5-coder-32b-instruct",
     "deepseek/deepseek-r1",
-    "deepseek/deepseek-chat"
+    "deepseek/deepseek-v3",
+    "deepseek/deepseek-chat",
+    "deepseek/deepseek-r1-distill-llama-70b",
+    "NaniDAO/deepseek-r1-qwen-2.5-32B-ablated"
 ]
 
 model_list = (
