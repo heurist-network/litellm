@@ -695,7 +695,8 @@ heurist_models = [
     "deepseek/deepseek-v3",
     "deepseek/deepseek-chat",
     "deepseek/deepseek-r1-distill-llama-70b",
-    "NaniDAO/deepseek-r1-qwen-2.5-32B-ablated"
+    "NaniDAO/deepseek-r1-qwen-2.5-32B-ablated",
+    "latitudegames/wayfarer-large-70b-llama-3.3"
 ]
 
 model_list = (
